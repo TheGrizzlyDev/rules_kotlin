@@ -1,24 +1,41 @@
-# Copyright 2018 The Bazel Authors. All rights reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 workspace(name = "dev_io_bazel_rules_kotlin")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "rules_pkg",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.8.0/rules_pkg-0.8.0.tar.gz",
+        "https://github.com/bazelbuild/rules_pkg/releases/download/0.8.0/rules_pkg-0.8.0.tar.gz",
+    ],
+    sha256 = "eea0f59c28a9241156a47d7a8e32db9122f3d50b505fae0f33de6ce4d9b61834",
+)
+load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
+rules_pkg_dependencies()
+
+local_repository(
+    name = "release_archive",
+    path = "/home/antonio/rules_kotlin/src/main/starlark/release_archive",
+)
+load("@release_archive//:repository.bzl", "archive_repository")
+
+
+archive_repository(
+    name = "io_bazel_rules_kotlin",
+    local_path = "/home/antonio/rules_kotlin/"
+)
+
+load("@io_bazel_rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories", "versions")
+
+kotlin_repositories()
+
+load("@io_bazel_rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
+
+kt_register_toolchains()
 
 load("//src/main/starlark/core/repositories:download.bzl", "kt_download_local_dev_dependencies")
 
 kt_download_local_dev_dependencies()
 
-load("//kotlin:repositories.bzl", "kotlin_repositories")
+load("//kotlin:repositories.bzl", local_kotlin_repos="kotlin_repositories")
 
-kotlin_repositories()
-
-register_toolchains("@dev_io_bazel_rules_kotlin//kotlin/internal:default_toolchain")
+local_kotlin_repos()
